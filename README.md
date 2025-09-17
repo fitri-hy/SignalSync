@@ -4,6 +4,8 @@
 
 Library ini memusatkan semua interaksi data melalui satu titik, mengelola subscribe ke endpoint tunggal, multi-endpoint, dan graph-based, sekaligus menyediakan mekanisme prefetching dan analisis data sederhana.
 
+<img src="./diagram1.png" alt="diagram.png" >
+
 ---
 
 ## Filosofi
@@ -16,9 +18,38 @@ Fitur predictive & observant ditambahkan untuk memproses data secara cerdas, men
 
 ---
 
-## Diagram
+## Fitur Bawaan
 
-<img src="./diagram.png" alt="diagram.png" >
+#### Single Subscribe
+   - Menerima update data realtime dari satu endpoint.
+   - Cocok untuk menampilkan daftar todo, status, atau data tunggal di UI.
+
+#### Multi Subscribe
+   - Menerima data realtime dari beberapa endpoint sekaligus.
+   - Mempermudah sinkronisasi beberapa sumber data dalam satu tampilan.
+
+#### Graph Subscribe
+   - Subscribe data berbasis key-value mapping.
+   - Setiap key mewakili endpoint, memudahkan pengelolaan data kompleks.
+
+#### Predictive Fetch
+   - Memperkirakan data yang akan dibutuhkan selanjutnya dan melakukan prefetch.
+   - Mengurangi latensi dan membuat UI lebih responsif.
+
+#### Realtime JSON Stream
+   - Semua data diterima dalam bentuk JSON mentah.
+   - Bisa langsung diproses, ditampilkan di RecyclerView, TextView, atau UI lain.
+
+#### Reactive First (Flow-based)
+   - Semua update data disalurkan melalui Kotlin Flow.
+   - Otomatis berhenti saat Activity/Fragment dihancurkan (`lifecycleScope` kompatibel).
+
+#### Single Source of Truth & Prefetching
+   - Mengelola cache internal sehingga data konsisten.
+   - Mengurangi fetch berulang dan mempercepat update UI.
+
+#### Analisis Data Sederhana
+   - Menyediakan fungsi `analyze()` untuk memproses atau mendapatkan metrics dari data secara cepat.
 
 ---
 
@@ -45,7 +76,7 @@ Fitur predictive & observant ditambahkan untuk memproses data secara cerdas, men
 
 ---
 
-## Intergrasi (Kotlin DSL)
+## Integrasi (Kotlin DSL)
 
 #### `settings.gradle.kts`
 
@@ -63,7 +94,7 @@ implementation(project(":SignalSync"))
 
 ## Penggunaan
 
-#### Inisialisasi
+### Inisialisasi
 
 ```kotlin
 val signalSync = SignalSync.init(this)
@@ -71,21 +102,19 @@ val signalSync = SignalSync.init(this)
 
 ---
 
-#### Single Subscribe
+### Single Subscribe
 
 ```kotlin
 lifecycleScope.launch {
-    signalSync.subscribe("https://jsonplaceholder.typicode.com/todos/1")
-    .collect { data ->
-        val metrics = signalSync.analyze(data)
-        tvRealtimeData.text = "Single:\n$data\nMetrics: $metrics"
-    }
+    signalSync.subscribe("https://jsonplaceholder.typicode.com/todos")
+        .collect { data ->
+            println("Single Subscribe: $data")
+        }
 }
 ```
-
 ---
 
-#### Multi Subscribe
+### Multi Subscribe
 
 ```kotlin
 lifecycleScope.launch {
@@ -94,16 +123,15 @@ lifecycleScope.launch {
         "https://jsonplaceholder.typicode.com/todos/2"
     )
     signalSync.multiSubscribe(urls)
-    .collect { dataList ->
-        val metricsList = dataList.map { signalSync.analyze(it) }
-        tvMultiData.text = "Multi:\n$dataList\nMetrics: $metricsList"
-    }
+        .collect { dataList ->
+            println("Multi Subscribe: $dataList")
+        }
 }
 ```
 
 ---
 
-#### Graph Subscribe
+### Graph Subscribe
 
 ```kotlin
 lifecycleScope.launch {
@@ -112,25 +140,21 @@ lifecycleScope.launch {
         "todo2" to "https://jsonplaceholder.typicode.com/todos/2"
     )
     signalSync.subscribeGraph(graph)
-    .collect { graphData ->
-        val metricsMap = graphData.mapValues { signalSync.analyze(it.value) }
-        tvGraphData.text = "Graph:\n$graphData\nMetrics: $metricsMap"
-    }
+        .collect { graphData ->
+            println("Graph Subscribe: $graphData")
+        }
 }
 ```
 
 ---
 
-#### Predictive Fetch
+### Predictive Fetch
 
 ```kotlin
 lifecycleScope.launch {
-    signalSync.predictiveFetch("https://jsonplaceholder.typicode.com/todos/1")
+    signalSync.predictiveFetch("https://jsonplaceholder.typicode.com/todos")
         .collect { data ->
-        val metrics = signalSync.analyze(data)
-        tvPredictiveData.text = "Predictive:\n$data\nMetrics: $metrics"
-    }
+            println("Predictive Fetch: $data")
+        }
 }
 ```
-
----
