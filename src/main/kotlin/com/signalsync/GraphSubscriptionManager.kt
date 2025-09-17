@@ -10,9 +10,6 @@ class GraphSubscriptionManager(private val manager: DataManager) {
         val flows = graph.map { (node, url) ->
             manager.subscribe(url).map { data -> node to data }
         }
-
-        return combine(flows) { pairs ->
-            pairs.toMap()
-        }
+        return combine(flows) { pairs -> pairs.toMap() }
     }
 }

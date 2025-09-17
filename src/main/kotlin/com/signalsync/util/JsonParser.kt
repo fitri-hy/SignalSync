@@ -5,7 +5,7 @@ import com.google.gson.Gson
 import java.io.File
 
 class JsonParser(private val context: Context, private val filename: String) {
-    
+
     private val gson = Gson()
     private val file = File(context.filesDir, filename)
 
